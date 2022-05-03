@@ -1,17 +1,14 @@
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { Upload } from '@aws-sdk/lib-storage';
 import { fromIni } from '@aws-sdk/credential-provider-ini';
 import { Injectable } from '@nestjs/common';
-import { v4 as uuidv4 } from 'uuid';
+import internal from 'stream';
 
-import {
-  ApiConfigService,
-  AWSConfig,
-} from '~/modules/shared/services/api-config.service';
-
-const JOB_DETAIL_FOLDER = 'job-detail';
+import { ApiConfigService, AWSConfig } from '~/modules/shared/services';
+import { IStorageService } from '../interfaces';
 
 @Injectable()
-export class AwsS3Service {
+export class AwsS3Service implements IStorageService {
   private client: S3Client;
   private awsConfig: AWSConfig;
 
@@ -24,26 +21,38 @@ export class AwsS3Service {
     });
   }
 
-  public uploadJobDetail(file: Express.Multer.File) {
-    console.log(11, file);
-    const key =
-      JOB_DETAIL_FOLDER + '/' + this.generateUniqueName(file.originalname);
-    this.upload(key, file.buffer);
+  public async save(key: string, body: internal.Readable | ReadableStream) {
+    const params = {
+      Bucket: this.awsConfig.s3Bucket,
+      Key: key,
+      Body: body,
+    };
+
+    try {
+      const parallelUploads3 = new Upload({
+        client: this.client,
+        queueSize: 4, // optional concurrency configuration
+        partSize: 5242880, // optional size of each part
+        leavePartsOnError: false, // optional manually handle dropped parts
+        params,
+      });
+
+      parallelUploads3.on('httpUploadProgress', (progress) => {
+        console.log(progress);
+      });
+
+      await parallelUploads3.done();
+    } catch (e) {
+      console.log(e);
+    }
   }
 
-  private async upload(key: string, body: Buffer) {
+  public async delete(key: string) {
     const results = await this.client.send(
-      new PutObjectCommand({
+      new DeleteObjectCommand({
         Bucket: this.awsConfig.s3Bucket,
         Key: key,
-        Body: body,
       }),
     );
-
-    console.log(results);
-  }
-
-  private generateUniqueName(fileName: string) {
-    return uuidv4() + '.' + fileName;
   }
 }
