@@ -1,10 +1,22 @@
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 
-import { ApiConfigService } from '~/modules/shared/services/api-config.service';
-import { AwsS3Service } from '~/modules/shared/services/aws-s3.service';
+import {
+  ApiConfigService,
+  AwsS3Service,
+  AppLogger,
+} from '~/modules/shared/services';
+import { StorageService } from '~/modules/shared/interfaces';
 
+@Global()
 @Module({
-  providers: [ApiConfigService, AwsS3Service],
-  exports: [ApiConfigService, AwsS3Service],
+  providers: [
+    ApiConfigService,
+    {
+      provide: StorageService,
+      useClass: AwsS3Service,
+    },
+    AppLogger,
+  ],
+  exports: [ApiConfigService, StorageService, AppLogger],
 })
 export class SharedModule {}

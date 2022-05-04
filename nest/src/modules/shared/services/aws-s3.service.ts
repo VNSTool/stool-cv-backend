@@ -1,21 +1,31 @@
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import {
+  S3Client,
+  DeleteObjectCommand,
+  S3,
+  PutObjectCommandInput,
+} from '@aws-sdk/client-s3';
+import { Progress, Upload } from '@aws-sdk/lib-storage';
 import { fromIni } from '@aws-sdk/credential-provider-ini';
 import { Injectable } from '@nestjs/common';
-import { v4 as uuidv4 } from 'uuid';
+import internal from 'stream';
 
 import {
   ApiConfigService,
   AWSConfig,
-} from '~/modules/shared/services/api-config.service';
+  AppLogger,
+} from '~/modules/shared/services';
+import { IStorageService } from '~/modules/shared/interfaces';
 
-const JOB_DETAIL_FOLDER = 'job-detail';
+import { PUBLIC_READ } from '~/common/constants/aws-file-acl.constants';
+import { TYPE_S3 } from '~/common/constants/storage.constants';
 
 @Injectable()
-export class AwsS3Service {
+export class AwsS3Service implements IStorageService {
+  public storage_type: string = TYPE_S3;
   private client: S3Client;
   private awsConfig: AWSConfig;
 
-  constructor(configService: ApiConfigService) {
+  constructor(configService: ApiConfigService, private logger: AppLogger) {
     this.awsConfig = configService.appConfig.aws;
 
     this.client = new S3Client({
@@ -24,26 +34,71 @@ export class AwsS3Service {
     });
   }
 
-  public uploadJobDetail(file: Express.Multer.File) {
-    console.log(11, file);
-    const key =
-      JOB_DETAIL_FOLDER + '/' + this.generateUniqueName(file.originalname);
-    this.upload(key, file.buffer);
+  public async save(
+    key: string,
+    body: internal.Readable | ReadableStream,
+  ): Promise<Error | null> {
+    const location = this.awsConfig.s3Bucket + '/' + key;
+    this.logger.log({
+      action: 'UPLOAD_START',
+      location,
+    });
+
+    const params: PutObjectCommandInput = {
+      Bucket: this.awsConfig.s3Bucket,
+      Key: key,
+      Body: body,
+      ACL: PUBLIC_READ,
+    };
+
+    try {
+      const parallelUploads3 = new Upload({
+        client: this.client,
+        queueSize: 4,
+        partSize: 5 * 1024 * 1024,
+        leavePartsOnError: false,
+        params,
+      });
+
+      parallelUploads3.on('httpUploadProgress', async (progress: Progress) => {
+        this.logger.log({
+          action: 'UPLOADING',
+          location,
+          progress,
+        });
+      });
+
+      await parallelUploads3.done();
+    } catch (e) {
+      return e;
+    }
+
+    this.logger.log({
+      action: 'UPLOAD_FINISH',
+      location,
+    });
   }
 
-  private async upload(key: string, body: Buffer) {
-    const results = await this.client.send(
-      new PutObjectCommand({
-        Bucket: this.awsConfig.s3Bucket,
-        Key: key,
-        Body: body,
-      }),
-    );
+  public async delete(key: string): Promise<Error | null> {
+    const location = this.awsConfig.s3Bucket + '/' + key;
+    this.logger.log({
+      action: 'DELETE_START',
+      location,
+    });
+    try {
+      await this.client.send(
+        new DeleteObjectCommand({
+          Bucket: this.awsConfig.s3Bucket,
+          Key: key,
+        }),
+      );
+    } catch (e) {
+      return e;
+    }
 
-    console.log(results);
-  }
-
-  private generateUniqueName(fileName: string) {
-    return uuidv4() + '.' + fileName;
+    this.logger.log({
+      action: 'DELETE_FINISH',
+      location,
+    });
   }
 }

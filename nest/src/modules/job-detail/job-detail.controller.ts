@@ -1,22 +1,29 @@
 import {
+  BadRequestException,
   Controller,
+  HttpStatus,
   Post,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { Express } from 'express';
-
-import { ValidateFilePipe } from '~/modules/job-detail/pipes/validate-file.pipe';
-import { AwsS3Service } from '../shared/services/aws-s3.service';
+import { CustomFile } from './job-detail.storage-engine';
+import { ConvertPathService } from './services';
 
 @Controller('job-detail')
 export class JobDetailController {
-  constructor(private awsS3Service: AwsS3Service) {}
+  constructor(private convertPathService: ConvertPathService) {}
 
   @Post('upload')
   @UseInterceptors(FileInterceptor('file'))
-  uploadFile(@UploadedFile(ValidateFilePipe) file: Express.Multer.File) {
-    this.awsS3Service.uploadJobDetail(file);
+  uploadFile(@UploadedFile() file: CustomFile) {
+    if (!file) {
+      throw new BadRequestException('Invalid File');
+    }
+
+    return {
+      statusCode: HttpStatus.CREATED,
+      fileUrl: this.convertPathService.convertToCDN(file),
+    };
   }
 }
