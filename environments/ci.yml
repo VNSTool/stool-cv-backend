@@ -1,0 +1,16 @@
+version: "2.4"
+
+services:
+  install-dependencies:
+    image: 132344050580.dkr.ecr.ap-southeast-1.amazonaws.com/nodejs/alpine:v0.0.2
+    working_dir: /stool/cv-backend
+    volumes:
+      - ../nest:/stool/cv-backend
+    entrypoint: ["yarn", "install"]
+
+  build:
+    image: 132344050580.dkr.ecr.ap-southeast-1.amazonaws.com/nodejs/alpine:v0.0.2
+    working_dir: /stool/cv-backend
+    volumes:
+      - ../nest:/stool/cv-backend
+    entrypoint: ["yarn", "build"]
