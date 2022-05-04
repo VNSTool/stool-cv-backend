@@ -9,6 +9,7 @@ export interface AWSConfig {
   profile: string;
   region: string;
   s3Bucket: string;
+  jobDetailCdn: string;
 }
 
 @Injectable()
@@ -21,6 +22,7 @@ export class ApiConfigService {
         profile: this.getString('AWS_PROFILE'),
         region: this.getString('AWS_REGION'),
         s3Bucket: this.getString('S3_BUCKET'),
+        jobDetailCdn: this.getString('JOB_DETAIL_CDN'),
       },
     };
   }

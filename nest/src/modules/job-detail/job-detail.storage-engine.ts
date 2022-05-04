@@ -5,6 +5,10 @@ import { v4 as uuidv4 } from 'uuid';
 
 const FOLDER = 'job-detail';
 
+export interface CustomFile extends Partial<Express.Multer.File> {
+  storageType: string;
+}
+
 class JobDetailStorageEngine implements multer.StorageEngine {
   private storageService: IStorageService;
 
@@ -12,38 +16,30 @@ class JobDetailStorageEngine implements multer.StorageEngine {
     this.storageService = opts.storageService;
   }
 
-  _handleFile = (
+  _handleFile = async (
     req: Request,
     file: Express.Multer.File,
-    cb: (error?: any, info?: Partial<Express.Multer.File>) => void,
-  ): void => {
-    try {
-      const filePath = this.getFilePath(
-        this.generateUniqueFileName(file.originalname),
-      );
-      this.storageService.save(filePath, file.stream);
+    cb: (error?: any, info?: CustomFile) => void,
+  ): Promise<void> => {
+    const filePath = this.getFilePath(
+      this.generateUniqueFileName(file.originalname),
+    );
+    const error = await this.storageService.save(filePath, file.stream);
 
-      cb(null, {
-        originalname: file.originalname,
-        path: filePath,
-      });
-    } catch (e) {
-      cb(e);
-    }
+    cb(error, {
+      originalname: file.originalname,
+      path: filePath,
+      storageType: this.storageService.storage_type,
+    });
   };
 
-  _removeFile = (
+  _removeFile = async (
     _req: Request,
     file: Express.Multer.File & { name: string },
     cb: (error: Error | null) => void,
-  ): void => {
-    try {
-      this.storageService.delete(file.path);
-
-      cb(null);
-    } catch (e) {
-      cb(e);
-    }
+  ): Promise<void> => {
+    const error = await this.storageService.delete(file.path);
+    cb(error);
   };
 
   private generateUniqueFileName = (fileName: String): string => {

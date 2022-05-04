@@ -1,7 +1,12 @@
-import { S3Client, DeleteObjectCommand, S3 } from '@aws-sdk/client-s3';
+import {
+  S3Client,
+  DeleteObjectCommand,
+  S3,
+  PutObjectCommandInput,
+} from '@aws-sdk/client-s3';
 import { Progress, Upload } from '@aws-sdk/lib-storage';
 import { fromIni } from '@aws-sdk/credential-provider-ini';
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import internal from 'stream';
 
 import {
@@ -11,9 +16,12 @@ import {
 } from '~/modules/shared/services';
 import { IStorageService } from '~/modules/shared/interfaces';
 
+import { PUBLIC_READ } from '~/common/constants/aws-file-acl.constants';
+import { TYPE_S3 } from '~/common/constants/storage.constants';
+
 @Injectable()
 export class AwsS3Service implements IStorageService {
-  public storage_type: string = 'S3';
+  public storage_type: string = TYPE_S3;
   private client: S3Client;
   private awsConfig: AWSConfig;
 
@@ -26,54 +34,68 @@ export class AwsS3Service implements IStorageService {
     });
   }
 
-  public async save(key: string, body: internal.Readable | ReadableStream) {
+  public async save(
+    key: string,
+    body: internal.Readable | ReadableStream,
+  ): Promise<Error | null> {
     const location = this.awsConfig.s3Bucket + '/' + key;
     this.logger.log({
       action: 'UPLOAD_START',
       location,
     });
 
-    const params = {
+    const params: PutObjectCommandInput = {
       Bucket: this.awsConfig.s3Bucket,
       Key: key,
       Body: body,
+      ACL: PUBLIC_READ,
     };
 
-    const parallelUploads3 = new Upload({
-      client: this.client,
-      queueSize: 4,
-      partSize: 5242880,
-      leavePartsOnError: false,
-      params,
-    });
-
-    parallelUploads3.on('httpUploadProgress', (progress: Progress) => {
-      this.logger.log({
-        action: 'UPLOADING',
-        location,
-        progress,
+    try {
+      const parallelUploads3 = new Upload({
+        client: this.client,
+        queueSize: 4,
+        partSize: 5 * 1024 * 1024,
+        leavePartsOnError: false,
+        params,
       });
-    });
 
-    await parallelUploads3.done();
+      parallelUploads3.on('httpUploadProgress', async (progress: Progress) => {
+        this.logger.log({
+          action: 'UPLOADING',
+          location,
+          progress,
+        });
+      });
+
+      await parallelUploads3.done();
+    } catch (e) {
+      return e;
+    }
+
     this.logger.log({
       action: 'UPLOAD_FINISH',
       location,
     });
   }
 
-  public async delete(key: string) {
+  public async delete(key: string): Promise<Error | null> {
     const location = this.awsConfig.s3Bucket + '/' + key;
     this.logger.log({
       action: 'DELETE_START',
       location,
     });
-    const results = await this.client.send(
-      new DeleteObjectCommand({
-        Bucket: this.awsConfig.s3Bucket,
-        Key: key,
-      }),
-    );
+    try {
+      await this.client.send(
+        new DeleteObjectCommand({
+          Bucket: this.awsConfig.s3Bucket,
+          Key: key,
+        }),
+      );
+    } catch (e) {
+      return e;
+    }
+
     this.logger.log({
       action: 'DELETE_FINISH',
       location,
