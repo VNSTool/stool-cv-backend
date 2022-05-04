@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 const FOLDER = 'job-detail';
 
-class CustomStorageEngine implements multer.StorageEngine {
+class JobDetailStorageEngine implements multer.StorageEngine {
   private storageService: IStorageService;
 
   constructor(opts) {
@@ -17,12 +17,19 @@ class CustomStorageEngine implements multer.StorageEngine {
     file: Express.Multer.File,
     cb: (error?: any, info?: Partial<Express.Multer.File>) => void,
   ): void => {
-    const filePath = this.getFilePath(file.originalname);
-    this.storageService.save(filePath, file.stream);
-    cb(null, {
-      originalname: file.originalname,
-      path: filePath,
-    });
+    try {
+      const filePath = this.getFilePath(
+        this.generateUniqueFileName(file.originalname),
+      );
+      this.storageService.save(filePath, file.stream);
+
+      cb(null, {
+        originalname: file.originalname,
+        path: filePath,
+      });
+    } catch (e) {
+      cb(e);
+    }
   };
 
   _removeFile = (
@@ -30,15 +37,24 @@ class CustomStorageEngine implements multer.StorageEngine {
     file: Express.Multer.File & { name: string },
     cb: (error: Error | null) => void,
   ): void => {
-    console.log(222, file.stream);
-    cb(null);
+    try {
+      this.storageService.delete(file.path);
+
+      cb(null);
+    } catch (e) {
+      cb(e);
+    }
   };
 
-  private getFilePath = (fileName: String): string => {
+  private generateUniqueFileName = (fileName: String): string => {
+    return uuidv4() + '.' + fileName;
+  };
+
+  private getFilePath = (fileName: string): string => {
     return FOLDER + '/' + fileName;
   };
 }
 
 export default (opts) => {
-  return new CustomStorageEngine(opts);
+  return new JobDetailStorageEngine(opts);
 };

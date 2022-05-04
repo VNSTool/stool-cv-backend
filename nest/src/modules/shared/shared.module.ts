@@ -1,7 +1,11 @@
 import { Global, Module } from '@nestjs/common';
 
-import { ApiConfigService, AwsS3Service } from '~/modules/shared/services';
-import { StorageService } from './interfaces';
+import {
+  ApiConfigService,
+  AwsS3Service,
+  AppLogger,
+} from '~/modules/shared/services';
+import { StorageService } from '~/modules/shared/interfaces';
 
 @Global()
 @Module({
@@ -11,7 +15,8 @@ import { StorageService } from './interfaces';
       provide: StorageService,
       useClass: AwsS3Service,
     },
+    AppLogger,
   ],
-  exports: [ApiConfigService, StorageService],
+  exports: [ApiConfigService, StorageService, AppLogger],
 })
 export class SharedModule {}

@@ -4,7 +4,7 @@ import {
   MulterOptionsFactory,
 } from '@nestjs/platform-express';
 import { StorageService, IStorageService } from '~/modules/shared/interfaces';
-import CustomStorageEngine from '~/modules/job-detail/job-detail.storage-engine';
+import JobDetailStorageEngine from '~/modules/job-detail/job-detail.storage-engine';
 
 @Injectable()
 export class MulterConfigService implements MulterOptionsFactory {
@@ -12,7 +12,7 @@ export class MulterConfigService implements MulterOptionsFactory {
 
   createMulterOptions(): MulterModuleOptions {
     return {
-      storage: CustomStorageEngine({
+      storage: JobDetailStorageEngine({
         storageService: this.storageSerice,
       }),
     };
