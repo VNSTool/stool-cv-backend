@@ -38,8 +38,6 @@ services:
         working_dir: /stool/cv-backend
         container_name: stool-cv-backend
         entrypoint: ["yarn", "start:prod"]
-        ports:
-            - "3001:3000"
         restart: always
 
     nginx:
