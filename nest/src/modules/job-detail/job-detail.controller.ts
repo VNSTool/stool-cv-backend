@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Controller,
+  HttpStatus,
   Post,
   UploadedFile,
   UseInterceptors,
@@ -20,10 +21,8 @@ export class JobDetailController {
       throw new BadRequestException('Invalid File');
     }
 
-    console.log(123, file.size);
-
     return {
-      statusCode: 200,
+      statusCode: HttpStatus.CREATED,
       fileUrl: this.convertPathService.convertToCDN(file),
     };
   }

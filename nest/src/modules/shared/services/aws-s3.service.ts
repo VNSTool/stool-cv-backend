@@ -6,7 +6,7 @@ import {
 } from '@aws-sdk/client-s3';
 import { Progress, Upload } from '@aws-sdk/lib-storage';
 import { fromIni } from '@aws-sdk/credential-provider-ini';
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import internal from 'stream';
 
 import {
