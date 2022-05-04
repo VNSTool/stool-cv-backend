@@ -1,0 +1,11 @@
+services:
+  nest:
+    image: ${REGISTRY}/curriculum-vitae-backend/nest:${IMAGE_TAG}
+    build:
+      context: ../
+      dockerfile: ./environments/nest/Dockerfile
+
+  nginx:
+    image: ${REGISTRY}/curriculum-vitae-backend/nginx:${IMAGE_TAG}
+    build:
+      context: ./nginx
