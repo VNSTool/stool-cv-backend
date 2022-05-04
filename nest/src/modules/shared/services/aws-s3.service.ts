@@ -1,8 +1,8 @@
 import {
   S3Client,
   DeleteObjectCommand,
-  S3,
   PutObjectCommandInput,
+  S3ClientConfig,
 } from '@aws-sdk/client-s3';
 import { Progress, Upload } from '@aws-sdk/lib-storage';
 import { fromIni } from '@aws-sdk/credential-provider-ini';
@@ -28,10 +28,15 @@ export class AwsS3Service implements IStorageService {
   constructor(configService: ApiConfigService, private logger: AppLogger) {
     this.awsConfig = configService.appConfig.aws;
 
-    this.client = new S3Client({
+    const config: S3ClientConfig = {
       region: this.awsConfig.region,
-      credentials: fromIni({ profile: this.awsConfig.profile }),
-    });
+    };
+
+    if (this.awsConfig.profile) {
+      config.credentials = fromIni({ profile: this.awsConfig.profile });
+    }
+
+    this.client = new S3Client(config);
   }
 
   public async save(
