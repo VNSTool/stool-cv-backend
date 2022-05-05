@@ -7,6 +7,10 @@ async function bootstrap() {
     bufferLogs: true,
   });
 
+  app.enableCors({
+    origin: [/localhost/, /stool\.vn$/],
+  });
+
   app.useLogger(new AppLogger());
   await app.listen(3000);
 }
