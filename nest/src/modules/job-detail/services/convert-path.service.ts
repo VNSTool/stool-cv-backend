@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { match } from 'assert';
 
 import { TYPE_S3 } from '~/common/constants/storage.constants';
 import { ApiConfigService } from '~/modules/shared/services';
@@ -17,5 +18,24 @@ export class ConvertPathService {
     }
 
     return cdnPrefix + '/' + file.path;
+  }
+
+  extractFilePathFromUrl(url: string): string {
+    const CdnPrefixes = [this.apiConfigService.appConfig.aws.jobDetailCdn];
+
+    for (let cdnPrefix of CdnPrefixes) {
+      let matches;
+      if (
+        (matches = url.match(
+          new RegExp(
+            `${cdnPrefix.replace(/[-[\]{}()*+?.,\\^$|]/g, '\\$&')}/(.*)`,
+          ),
+        ))
+      ) {
+        return matches[1];
+      }
+    }
+
+    return '';
   }
 }
