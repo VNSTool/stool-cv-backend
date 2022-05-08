@@ -1,4 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
+import { Cron } from '@nestjs/schedule';
+
 import {
   NOTIFICATION_EMAIL_CONFIRMATION,
   NOTIFICATION_EMAIL_TO_PERSONAL_EMAIL,
@@ -33,6 +35,7 @@ export class NotificationService {
     }
   }
 
+  @Cron('0 * * * * *')
   async handleNotification(): Promise<void> {
     let notifications: Array<NotificationDto>;
     notifications = await this.queueService.receiveMessage(this.queue);
