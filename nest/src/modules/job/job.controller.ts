@@ -9,6 +9,7 @@ import {
   Inject,
   Param,
   Body,
+  Get,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { IStorageService, StorageService } from '../shared/interfaces';
@@ -55,7 +56,15 @@ export class JobDetailController {
 
   @Post()
   async submitJob(@Body() createJobDto: CreateJobDto) {
-    await this.notificationService.sendNotification(createJobDto);
+    await this.notificationService.queueNotification(createJobDto);
+    return {
+      statusCode: HttpStatus.CREATED,
+    };
+  }
+
+  @Get('test-notification')
+  async testNotification() {
+    await this.notificationService.handleNotification();
     return {
       statusCode: HttpStatus.CREATED,
     };
