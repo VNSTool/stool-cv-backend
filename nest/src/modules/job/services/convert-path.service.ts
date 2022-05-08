@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 
 import { TYPE_S3 } from '~/common/constants/storage.constants';
 import { ApiConfigService } from '~/modules/shared/services';
-import { CustomFile } from '../job-detail.storage-engine';
+import { CustomFile } from '../job.storage-engine';
 
 @Injectable()
 export class ConvertPathService {

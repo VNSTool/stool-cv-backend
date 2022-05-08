@@ -14,16 +14,16 @@ import {
   AWSConfig,
   AppLogger,
 } from '~/modules/shared/services';
-import { IStorageService } from '~/modules/shared/interfaces';
 
+import { IStorageService } from '../../interfaces';
 import { PUBLIC_READ } from '~/common/constants/aws-file-acl.constants';
 import { TYPE_S3 } from '~/common/constants/storage.constants';
 
 @Injectable()
 export class AwsS3Service implements IStorageService {
-  public storage_type: string = TYPE_S3;
   private client: S3Client;
   private awsConfig: AWSConfig;
+  public storage_type: string = TYPE_S3;
 
   constructor(configService: ApiConfigService, private logger: AppLogger) {
     this.awsConfig = configService.appConfig.aws;

@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import helmet from 'helmet';
-import * as csurf from 'csurf';
+// import * as csurf from 'csurf';
 
 import { AppModule } from '~/app.module';
 import { AppLogger } from '~/modules/shared/services';

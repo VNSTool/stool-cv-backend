@@ -7,21 +7,23 @@ import {
   Post,
   Delete,
   Inject,
+  Param,
   Body,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { IStorageService, StorageService } from '../shared/interfaces';
-import { CustomFile } from './job-detail.storage-engine';
+import { CreateJobDto } from './dtos/create-job.dto';
+import { CustomFile } from './job.storage-engine';
 import { ConvertPathService } from './services';
 
-@Controller('job-detail')
+@Controller('job')
 export class JobDetailController {
   constructor(
     private convertPathService: ConvertPathService,
     @Inject(StorageService) private storageSerice: IStorageService,
   ) {}
 
-  @Post('upload')
+  @Post('job-detail/upload')
   @UseInterceptors(FileInterceptor('file'))
   uploadFile(@UploadedFile() file: CustomFile) {
     if (!file) {
@@ -34,8 +36,8 @@ export class JobDetailController {
     };
   }
 
-  @Delete()
-  deleteFile(@Body('fileUrl') fileUrl: string) {
+  @Delete('job-detail/:fileUrl')
+  deleteFile(@Param('fileUrl') fileUrl: string) {
     const filePath = this.convertPathService.extractFilePathFromUrl(fileUrl);
 
     if (!filePath) {
@@ -46,6 +48,13 @@ export class JobDetailController {
 
     return {
       statusCode: HttpStatus.OK,
+    };
+  }
+
+  @Post()
+  submitJob(@Body() createJobDto: CreateJobDto) {
+    return {
+      statusCode: HttpStatus.CREATED,
     };
   }
 }

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 export interface AppConfig {
+  env: string;
   aws: AWSConfig;
 }
 
@@ -18,6 +19,7 @@ export class ApiConfigService {
 
   get appConfig(): AppConfig {
     return {
+      env: this.getString('APP_ENV'),
       aws: {
         profile: this.getString('AWS_PROFILE'),
         region: this.getString('AWS_REGION'),
@@ -25,6 +27,10 @@ export class ApiConfigService {
         jobDetailCdn: this.getString('JOB_DETAIL_CDN'),
       },
     };
+  }
+
+  get isProd(): Boolean {
+    return this.appConfig['env'] === 'prod';
   }
 
   private getNumber(key: string): number {
