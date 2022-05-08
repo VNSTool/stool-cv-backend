@@ -1,4 +1,8 @@
-import { SQSClient, SQSClientConfig } from '@aws-sdk/client-sqs';
+import {
+  SendMessageCommand,
+  SQSClient,
+  SQSClientConfig,
+} from '@aws-sdk/client-sqs';
 import { fromIni } from '@aws-sdk/credential-provider-ini';
 import { Injectable } from '@nestjs/common';
 
@@ -9,7 +13,6 @@ import {
 } from '~/modules/shared/services';
 import { IQueueService } from '~/modules/shared/interfaces';
 
-import { PUBLIC_READ } from '~/common/constants/aws-file-acl.constants';
 import { TYPE_SQS } from '~/common/constants/queue.constants';
 
 @Injectable()
@@ -32,5 +35,24 @@ export class AwsSqsService implements IQueueService {
     this.client = new SQSClient(config);
   }
 
-  push() {}
+  async sendMessage(queue: string, message: any, group: string) {
+    const command = new SendMessageCommand({
+      MessageAttributes: {
+        Email: {
+          DataType: 'String',
+          StringValue: message.email,
+        },
+        CreatedAt: {
+          DataType: 'String',
+          StringValue: new Date().toISOString(),
+        },
+      },
+      MessageBody: JSON.stringify(message),
+      MessageGroupId: group,
+      QueueUrl: queue,
+    });
+
+    const response = await this.client.send(command);
+    this.logger.log(response);
+  }
 }

@@ -1,7 +1,7 @@
 export interface IQueueService {
   queue_type: string;
 
-  push(path: Object);
+  sendMessage(queue: string, message: any, group: string);
 }
 
 export const QueueService = 'QUEUE_SERVICE';

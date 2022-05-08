@@ -11,6 +11,7 @@ export interface AWSConfig {
   region: string;
   s3Bucket: string;
   jobDetailCdn: string;
+  jobSharingQueue: string;
 }
 
 @Injectable()
@@ -25,6 +26,7 @@ export class ApiConfigService {
         region: this.getString('AWS_REGION'),
         s3Bucket: this.getString('S3_BUCKET'),
         jobDetailCdn: this.getString('JOB_DETAIL_CDN'),
+        jobSharingQueue: this.getString('AWS_JOB_SHARING_QUEUE'),
       },
     };
   }

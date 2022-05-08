@@ -15,11 +15,13 @@ import { IStorageService, StorageService } from '../shared/interfaces';
 import { CreateJobDto } from './dtos/create-job.dto';
 import { CustomFile } from './job.storage-engine';
 import { ConvertPathService } from './services';
+import { NotificationService } from './services/notification.service';
 
 @Controller('job')
 export class JobDetailController {
   constructor(
     private convertPathService: ConvertPathService,
+    private notificationService: NotificationService,
     @Inject(StorageService) private storageSerice: IStorageService,
   ) {}
 
@@ -52,7 +54,8 @@ export class JobDetailController {
   }
 
   @Post()
-  submitJob(@Body() createJobDto: CreateJobDto) {
+  async submitJob(@Body() createJobDto: CreateJobDto) {
+    await this.notificationService.sendNotification(createJobDto);
     return {
       statusCode: HttpStatus.CREATED,
     };
