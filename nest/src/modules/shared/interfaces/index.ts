@@ -1,1 +1,2 @@
-export * from '~/modules/shared/interfaces/storage-service.interface';
+export * from './storage-service.interface';
+export * from './queue-service.interface';

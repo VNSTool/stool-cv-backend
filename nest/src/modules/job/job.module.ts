@@ -2,15 +2,15 @@ import { Module } from '@nestjs/common';
 
 import { MulterModule } from '@nestjs/platform-express';
 
-import { JobDetailController } from '~/modules/job-detail/job-detail.controller';
-
+import { JobDetailController } from './job.controller';
 import {
-  MulterConfigService,
   ConvertPathService,
-} from '~/modules/job-detail/services';
+  MulterConfigService,
+  NotificationService,
+} from './services';
 
 @Module({
-  providers: [ConvertPathService],
+  providers: [ConvertPathService, NotificationService],
   imports: [
     MulterModule.registerAsync({
       useClass: MulterConfigService,

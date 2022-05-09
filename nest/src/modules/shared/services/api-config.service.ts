@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 export interface AppConfig {
+  env: string;
   aws: AWSConfig;
 }
 
@@ -9,7 +10,8 @@ export interface AWSConfig {
   profile: string;
   region: string;
   s3Bucket: string;
-  jobDetailCdn: string;
+  cloudFrontCdn: string;
+  jobSharingQueue: string;
 }
 
 @Injectable()
@@ -18,13 +20,19 @@ export class ApiConfigService {
 
   get appConfig(): AppConfig {
     return {
+      env: this.getString('APP_ENV'),
       aws: {
         profile: this.getString('AWS_PROFILE'),
         region: this.getString('AWS_REGION'),
         s3Bucket: this.getString('S3_BUCKET'),
-        jobDetailCdn: this.getString('JOB_DETAIL_CDN'),
+        cloudFrontCdn: this.getString('CLOUDFRONT_CDN'),
+        jobSharingQueue: this.getString('AWS_JOB_SHARING_QUEUE'),
       },
     };
+  }
+
+  get isProd(): Boolean {
+    return this.appConfig['env'] === 'prod';
   }
 
   private getNumber(key: string): number {

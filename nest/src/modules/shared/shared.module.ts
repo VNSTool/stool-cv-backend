@@ -1,11 +1,16 @@
 import { Global, Module } from '@nestjs/common';
+import { APP_PIPE } from '@nestjs/core';
 
+import { QueueService, StorageService } from './interfaces';
+import { EmailService } from './interfaces/email-service.interface';
+import { ValidationPipe } from './pipes/validation.pipe';
 import {
   ApiConfigService,
-  AwsS3Service,
   AppLogger,
-} from '~/modules/shared/services';
-import { StorageService } from '~/modules/shared/interfaces';
+  AwsS3Service,
+  AwsSesService,
+  AwsSqsService,
+} from './services';
 
 @Global()
 @Module({
@@ -15,8 +20,26 @@ import { StorageService } from '~/modules/shared/interfaces';
       provide: StorageService,
       useClass: AwsS3Service,
     },
+    {
+      provide: QueueService,
+      useClass: AwsSqsService,
+    },
+    {
+      provide: EmailService,
+      useClass: AwsSesService,
+    },
+    AppLogger,
+    {
+      provide: APP_PIPE,
+      useClass: ValidationPipe,
+    },
+  ],
+  exports: [
+    ApiConfigService,
+    StorageService,
+    QueueService,
+    EmailService,
     AppLogger,
   ],
-  exports: [ApiConfigService, StorageService, AppLogger],
 })
 export class SharedModule {}
