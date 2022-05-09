@@ -15,8 +15,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { IStorageService, StorageService } from '../shared/interfaces';
 import { CreateJobDto } from './dtos/create-job.dto';
 import { CustomFile } from './job.storage-engine';
-import { ConvertPathService } from './services';
-import { NotificationService } from './services/notification.service';
+import { ConvertPathService, NotificationService } from './services';
 
 @Controller('job')
 export class JobDetailController {

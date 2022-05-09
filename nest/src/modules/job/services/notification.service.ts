@@ -14,7 +14,7 @@ import {
   EmailService,
   IEmailService,
 } from '~/modules/shared/interfaces/email-service.interface';
-import { ApiConfigService, AppLogger } from '~/modules/shared/services';
+import { ApiConfigService } from '~/modules/shared/services';
 import { CreateJobDto } from '../dtos/create-job.dto';
 import { NotificationDto } from '../dtos/notification.dto';
 
@@ -31,7 +31,6 @@ export class NotificationService {
   constructor(
     @Inject(QueueService) private queueService: IQueueService,
     @Inject(EmailService) private emailService: IEmailService,
-    private logger: AppLogger,
     apiConfigService: ApiConfigService,
   ) {
     this.queue = apiConfigService.appConfig.aws.jobSharingQueue;
@@ -56,7 +55,7 @@ export class NotificationService {
 
         switch (notificationType) {
           case NOTIFICATION_FACEBOOK_MESSENGER:
-            this.logger.warn('Skip. Not implemented yet.');
+            // TODO
             break;
 
           case NOTIFICATION_EMAIL_CONFIRMATION:

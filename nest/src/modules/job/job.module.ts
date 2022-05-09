@@ -3,8 +3,11 @@ import { Module } from '@nestjs/common';
 import { MulterModule } from '@nestjs/platform-express';
 
 import { JobDetailController } from './job.controller';
-import { ConvertPathService, MulterConfigService } from './services';
-import { NotificationService } from './services/notification.service';
+import {
+  ConvertPathService,
+  MulterConfigService,
+  NotificationService,
+} from './services';
 
 @Module({
   providers: [ConvertPathService, NotificationService],
