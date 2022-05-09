@@ -85,6 +85,8 @@ export class NotificationService {
             );
             break;
         }
+
+        await this.queueService.deleteMessage(this.queue, notification.key);
       }
     }
   }

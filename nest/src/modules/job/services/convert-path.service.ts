@@ -13,14 +13,14 @@ export class ConvertPathService {
 
     switch (file.storageType) {
       case TYPE_S3:
-        cdnPrefix = this.apiConfigService.appConfig.aws.jobDetailCdn;
+        cdnPrefix = this.s3CdnPrefix;
     }
 
-    return cdnPrefix + '/' + file.path;
+    return encodeURI(cdnPrefix + '/' + file.path);
   }
 
   extractFilePathFromUrl(url: string): string {
-    const CdnPrefixes = [this.apiConfigService.appConfig.aws.jobDetailCdn];
+    const CdnPrefixes = [this.s3CdnPrefix];
 
     for (let cdnPrefix of CdnPrefixes) {
       let matches;
@@ -36,5 +36,9 @@ export class ConvertPathService {
     }
 
     return '';
+  }
+
+  private get s3CdnPrefix(): string {
+    return this.apiConfigService.appConfig.aws.cloudFrontCdn;
   }
 }

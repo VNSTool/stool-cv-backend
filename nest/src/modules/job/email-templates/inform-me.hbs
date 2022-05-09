@@ -3,17 +3,30 @@
     <meta charset='utf-8' />
     <meta http-equiv='x-ua-compatible' content='ie=edge' />
     <title>You got job sharing</title>
+    <style>
+      .container { width: 100%; padding: 25px;} .content { max-width: 480px;
+      background-color: #f1f6fa; padding: 16px;} div { font-size: 16px;
+      line-height: 20px; color: #5b6987; } ul {padding: 0; margin: 0;} li {
+      overflow-wrap: break-word; white-space: normal; display: list-item;
+      list-style-type: disc; list-style-position: inside; font-size: 16px;
+      line-height: 20px}
+    </style>
   </head>
   <body>
-    <p>Some one just share jobs to you</p>
-    <p>Here are the jobs</p>
-    <ul>
-      {{#each jobDetailFiles}}
-        <li><a href='{{this.fileUrl}}'>{{this.fileUrl}}</a></li>
-      {{/each}}
-      {{#each jobDetailUrls}}
-        <li><a href='{{this}}'>{{this}}</a></li>
-      {{/each}}
-    </ul>
+    <div class='container'>
+      <div class='content'>
+        <div>{{email}} just share jobs to you.</div>
+        <br />
+        <div>Here are the jobs:</div>
+        <ul>
+          {{#each jobDetailFiles}}
+            <li><a href='{{this.fileUrl}}'>{{this.fileUrl}}</a></li>
+          {{/each}}
+          {{#each jobDetailUrls}}
+            <li><a href='{{this}}'>{{this}}</a></li>
+          {{/each}}
+        </ul>
+      </div>
+    </div>
   </body>
 </html>

@@ -16,7 +16,6 @@ import {
 } from '~/modules/shared/services';
 
 import { IStorageService } from '../../interfaces';
-import { PUBLIC_READ } from '~/common/constants/aws-file-acl.constants';
 import { TYPE_S3 } from '~/common/constants/storage.constants';
 
 @Injectable()
@@ -42,7 +41,7 @@ export class AwsS3Service implements IStorageService {
   public async save(
     key: string,
     body: internal.Readable | ReadableStream,
-  ): Promise<Error | null> {
+  ): Promise<void> {
     const location = this.awsConfig.s3Bucket + '/' + key;
     this.logger.log({
       action: 'UPLOAD_START',
@@ -53,30 +52,25 @@ export class AwsS3Service implements IStorageService {
       Bucket: this.awsConfig.s3Bucket,
       Key: key,
       Body: body,
-      ACL: PUBLIC_READ,
     };
 
-    try {
-      const parallelUploads3 = new Upload({
-        client: this.client,
-        queueSize: 4,
-        partSize: 5 * 1024 * 1024,
-        leavePartsOnError: false,
-        params,
-      });
+    const parallelUploads3 = new Upload({
+      client: this.client,
+      queueSize: 4,
+      partSize: 5 * 1024 * 1024,
+      leavePartsOnError: false,
+      params,
+    });
 
-      parallelUploads3.on('httpUploadProgress', async (progress: Progress) => {
-        this.logger.log({
-          action: 'UPLOADING',
-          location,
-          progress,
-        });
+    parallelUploads3.on('httpUploadProgress', async (progress: Progress) => {
+      this.logger.log({
+        action: 'UPLOADING',
+        location,
+        progress,
       });
+    });
 
-      await parallelUploads3.done();
-    } catch (e) {
-      return e;
-    }
+    await parallelUploads3.done();
 
     this.logger.log({
       action: 'UPLOAD_FINISH',
@@ -84,22 +78,18 @@ export class AwsS3Service implements IStorageService {
     });
   }
 
-  public async delete(key: string): Promise<Error | null> {
+  public async delete(key: string): Promise<void> {
     const location = this.awsConfig.s3Bucket + '/' + key;
     this.logger.log({
       action: 'DELETE_START',
       location,
     });
-    try {
-      await this.client.send(
-        new DeleteObjectCommand({
-          Bucket: this.awsConfig.s3Bucket,
-          Key: key,
-        }),
-      );
-    } catch (e) {
-      return e;
-    }
+    await this.client.send(
+      new DeleteObjectCommand({
+        Bucket: this.awsConfig.s3Bucket,
+        Key: key,
+      }),
+    );
 
     this.logger.log({
       action: 'DELETE_FINISH',

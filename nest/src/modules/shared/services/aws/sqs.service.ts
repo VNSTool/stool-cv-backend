@@ -2,11 +2,12 @@ import {
   ReceiveMessageCommand,
   SendMessageBatchCommand,
   SendMessageBatchRequestEntry,
+  DeleteMessageCommand,
   SQSClient,
   SQSClientConfig,
 } from '@aws-sdk/client-sqs';
 import { fromIni } from '@aws-sdk/credential-provider-ini';
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 
 import {
@@ -17,6 +18,7 @@ import {
 import { IQueueService } from '~/modules/shared/interfaces';
 
 import { TYPE_SQS } from '~/common/constants/queue.constants';
+import { QueueMessageDto } from '../../dtos/queue-message.dto';
 
 @Injectable()
 export class AwsSqsService implements IQueueService {
@@ -72,15 +74,11 @@ export class AwsSqsService implements IQueueService {
       QueueUrl: queue,
     });
 
-    try {
-      const response = await this.client.send(command);
-      this.logger.log('Send message to queue', response);
-    } catch (e) {
-      throw new InternalServerErrorException();
-    }
+    const response = await this.client.send(command);
+    this.logger.log('Send message to queue', response);
   }
 
-  async receiveMessage(queue: string): Promise<Object> | null {
+  async receiveMessage(queue: string): Promise<QueueMessageDto[]> | null {
     const command = new ReceiveMessageCommand({
       QueueUrl: queue,
       MaxNumberOfMessages: this.maximumMessageReceive,
@@ -88,20 +86,27 @@ export class AwsSqsService implements IQueueService {
       MessageAttributeNames: ['Type'],
     });
 
-    try {
-      const response = await this.client.send(command);
-      this.logger.log('Receive message from queue', response);
+    const response = await this.client.send(command);
+    this.logger.log('Receive message from queue', response);
 
-      const sqsMessages = response.Messages;
-      if (!sqsMessages || sqsMessages.length === 0) return null;
+    const sqsMessages = response.Messages;
+    if (!sqsMessages || sqsMessages.length === 0) return null;
 
-      return sqsMessages.map((message) => ({
-        messageId: message.MessageId,
-        attributes: message.MessageAttributes,
-        body: JSON.parse(message.Body),
-      }));
-    } catch (e) {
-      throw new InternalServerErrorException();
-    }
+    return sqsMessages.map((message) => ({
+      messageId: message.MessageId,
+      key: message.ReceiptHandle,
+      attributes: message.MessageAttributes,
+      body: JSON.parse(message.Body),
+    }));
+  }
+
+  async deleteMessage(queue: string, key: string): Promise<void> {
+    const command = new DeleteMessageCommand({
+      QueueUrl: queue,
+      ReceiptHandle: key,
+    });
+
+    const response = await this.client.send(command);
+    this.logger.log('Delete message', response);
   }
 }

@@ -24,13 +24,17 @@ class JobDetailStorageEngine implements multer.StorageEngine {
     const filePath = this.getFilePath(
       this.generateUniqueFileName(file.originalname),
     );
-    const error = await this.storageService.save(filePath, file.stream);
 
-    cb(error, {
-      originalname: file.originalname,
-      path: filePath,
-      storageType: this.storageService.storage_type,
-    });
+    try {
+      await this.storageService.save(filePath, file.stream);
+      cb(null, {
+        originalname: file.originalname,
+        path: filePath,
+        storageType: this.storageService.storage_type,
+      });
+    } catch (error) {
+      cb(error, null);
+    }
   };
 
   _removeFile = async (
@@ -38,8 +42,12 @@ class JobDetailStorageEngine implements multer.StorageEngine {
     file: Express.Multer.File & { name: string },
     cb: (error: Error | null) => void,
   ): Promise<void> => {
-    const error = await this.storageService.delete(file.path);
-    cb(error);
+    try {
+      await this.storageService.delete(file.path);
+      cb(null);
+    } catch (error) {
+      cb(error);
+    }
   };
 
   private generateUniqueFileName = (fileName: String): string => {

@@ -4,7 +4,7 @@ import {
   SendEmailCommand,
 } from '@aws-sdk/client-sesv2';
 import { fromIni } from '@aws-sdk/credential-provider-ini';
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 
 import { TYPE_SES } from '~/common/constants/email.constants';
@@ -61,11 +61,7 @@ export class AwsSesService implements IEmailService {
       },
     });
 
-    try {
-      const response = await this.client.send(command);
-      this.logger.log('Send mail response', response);
-    } catch (e) {
-      throw new InternalServerErrorException();
-    }
+    const response = await this.client.send(command);
+    this.logger.log('Send mail response', response);
   }
 }

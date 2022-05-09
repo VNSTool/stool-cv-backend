@@ -3,18 +3,31 @@
     <meta charset='utf-8' />
     <meta http-equiv='x-ua-compatible' content='ie=edge' />
     <title>Confirmation Email</title>
+    <style>
+      .container { width: 100%; padding: 25px;} .content { max-width: 480px;
+      background-color: #f1f6fa; padding: 16px;} div { font-size: 16px;
+      line-height: 20px; color: #5b6987; } ul {padding: 0; margin: 0;} li {
+      overflow-wrap: break-word; white-space: normal; display: list-item;
+      list-style-type: disc; list-style-position: inside; font-size: 16px;
+      line-height: 20px}
+    </style>
   </head>
   <body>
-    <p>Hi,</p>
-    <p>Thank you for sharing me jobs</p>
-    <p>Here are the jobs you share to me</p>
-    <ul>
-      {{#each jobDetailFiles}}
-        <li><a href='{{this.fileUrl}}'>{{this.fileUrl}}</a></li>
-      {{/each}}
-      {{#each jobDetailUrls}}
-        <li><a href='{{this}}'>{{this}}</a></li>
-      {{/each}}
-    </ul>
+    <div class='container'>
+      <div class='content'>
+        <div>Hi,</div>
+        <div>Thank you for sharing me jobs.</div>
+        <br />
+        <div>Here are the jobs you share to me:</div>
+        <ul>
+          {{#each jobDetailFiles}}
+            <li><a href='{{this.fileUrl}}'>{{this.fileUrl}}</a></li>
+          {{/each}}
+          {{#each jobDetailUrls}}
+            <li><a href='{{this}}'>{{this}}</a></li>
+          {{/each}}
+        </ul>
+      </div>
+    </div>
   </body>
 </html>
