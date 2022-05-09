@@ -1,0 +1,19 @@
+<html>
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv='x-ua-compatible' content='ie=edge' />
+    <title>You got job sharing</title>
+  </head>
+  <body>
+    <p>Some one just share jobs to you</p>
+    <p>Here are the jobs</p>
+    <ul>
+      {{#each jobDetailFiles}}
+        <li><a href='{{this.fileUrl}}'>{{this.fileUrl}}</a></li>
+      {{/each}}
+      {{#each jobDetailUrls}}
+        <li><a href='{{this}}'>{{this}}</a></li>
+      {{/each}}
+    </ul>
+  </body>
+</html>

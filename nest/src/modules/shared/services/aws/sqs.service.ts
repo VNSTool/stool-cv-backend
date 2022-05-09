@@ -72,9 +72,10 @@ export class AwsSqsService implements IQueueService {
       QueueUrl: queue,
     });
 
-    const response = await this.client.send(command);
-    this.logger.log('Send message to queue', response);
-    if (response.$metadata.httpStatusCode !== 200) {
+    try {
+      const response = await this.client.send(command);
+      this.logger.log('Send message to queue', response);
+    } catch (e) {
       throw new InternalServerErrorException();
     }
   }
@@ -87,19 +88,20 @@ export class AwsSqsService implements IQueueService {
       MessageAttributeNames: ['Type'],
     });
 
-    const response = await this.client.send(command);
-    this.logger.log('Receive message from queue', response);
-    if (response.$metadata.httpStatusCode !== 200) {
+    try {
+      const response = await this.client.send(command);
+      this.logger.log('Receive message from queue', response);
+
+      const sqsMessages = response.Messages;
+      if (!sqsMessages || sqsMessages.length === 0) return null;
+
+      return sqsMessages.map((message) => ({
+        messageId: message.MessageId,
+        attributes: message.MessageAttributes,
+        body: JSON.parse(message.Body),
+      }));
+    } catch (e) {
       throw new InternalServerErrorException();
     }
-
-    const sqsMessages = response.Messages;
-    if (!sqsMessages || sqsMessages.length === 0) return null;
-
-    return sqsMessages.map((message) => ({
-      messageId: message.MessageId,
-      attributes: message.MessageAttributes,
-      body: JSON.parse(message.Body),
-    }));
   }
 }

@@ -35,28 +35,37 @@ export class AwsSesService implements IEmailService {
     this.client = new SESv2Client(config);
   }
 
-  async sendEmail() {
+  async sendEmail(
+    toAddresses: string[],
+    bccAddresses: string[],
+    subject: string,
+    body: string,
+  ) {
     const command = new SendEmailCommand({
       FromEmailAddress: 'no-reply@curriculumvitae.stool.vn',
       Destination: {
-        ToAddresses: ['nmtri881994@gmail.com'],
-        BccAddresses: ['vnstool@gmail.com'],
+        ToAddresses: toAddresses,
+        BccAddresses: bccAddresses,
       },
       Content: {
         Simple: {
           Subject: {
-            Data: 'Thanks for sharing jobs',
+            Data: subject,
           },
           Body: {
-            Text: {
-              Data: 'Testing',
+            Html: {
+              Data: body,
             },
           },
         },
       },
     });
 
-    const response = await this.client.send(command);
-    this.logger.log('Send mail response', response);
+    try {
+      const response = await this.client.send(command);
+      this.logger.log('Send mail response', response);
+    } catch (e) {
+      throw new InternalServerErrorException();
+    }
   }
 }

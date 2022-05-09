@@ -1,5 +1,8 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
+import * as fs from 'fs';
+import * as path from 'path';
+import Handlebars from 'handlebars';
 
 import {
   NOTIFICATION_EMAIL_CONFIRMATION,
@@ -49,6 +52,7 @@ export class NotificationService {
     if (notifications && notifications.length !== 0) {
       for (let notification of notifications) {
         const notificationType = notification.attributes['Type']['StringValue'];
+        let message: string;
 
         switch (notificationType) {
           case NOTIFICATION_FACEBOOK_MESSENGER:
@@ -56,14 +60,43 @@ export class NotificationService {
             break;
 
           case NOTIFICATION_EMAIL_CONFIRMATION:
-            // await this.emailService.sendEmail(notification.body.email);
+            message = this.getTemplateString(
+              'confirmation.hbs',
+              notification.body,
+            );
+            await this.emailService.sendEmail(
+              [notification.body.email],
+              ['vnstool@gmail.com'],
+              'Thanks for sharing jobs',
+              message,
+            );
             break;
 
           case NOTIFICATION_EMAIL_TO_PERSONAL_EMAIL:
-            this.logger.log('Todo. Implementing.');
+            message = this.getTemplateString(
+              'inform-me.hbs',
+              notification.body,
+            );
+            await this.emailService.sendEmail(
+              ['nmtri881994@gmail.com'],
+              ['vnstool@gmail.com'],
+              'Jobs sharing',
+              message,
+            );
             break;
         }
       }
     }
+  }
+
+  private getTemplateString(
+    template: string,
+    createJobDto: CreateJobDto,
+  ): string {
+    const templateStr = fs
+      .readFileSync(path.resolve(__dirname, '../email-templates', template))
+      .toString('utf8');
+
+    return Handlebars.compile(templateStr)(createJobDto);
   }
 }
