@@ -30,9 +30,11 @@ export class NotificationService {
   }
 
   async queueNotification(message: CreateJobDto): Promise<void> {
-    for (let notification of this.notifications) {
-      await this.queueService.sendMessage(this.queue, message, notification);
-    }
+    await this.queueService.sendMessage(
+      this.queue,
+      message,
+      this.notifications,
+    );
   }
 
   @Cron('0 * * * * *')

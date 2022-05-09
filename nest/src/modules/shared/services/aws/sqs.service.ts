@@ -1,11 +1,14 @@
 import {
   ReceiveMessageCommand,
+  SendMessageBatchCommand,
+  SendMessageBatchRequestEntry,
   SendMessageCommand,
   SQSClient,
   SQSClientConfig,
 } from '@aws-sdk/client-sqs';
 import { fromIni } from '@aws-sdk/credential-provider-ini';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { v4 as uuidv4 } from 'uuid';
 
 import {
   ApiConfigService,
@@ -38,24 +41,35 @@ export class AwsSqsService implements IQueueService {
     this.client = new SQSClient(config);
   }
 
-  async sendMessage(queue: string, message: any, type: string): Promise<void> {
-    const command = new SendMessageCommand({
-      MessageAttributes: {
-        Email: {
-          DataType: 'String',
-          StringValue: message.email,
+  async sendMessage(
+    queue: string,
+    message: any,
+    types: string[],
+  ): Promise<void> {
+    const entries: SendMessageBatchRequestEntry[] = [];
+    for (let type of types) {
+      entries.push({
+        Id: uuidv4(),
+        MessageAttributes: {
+          Email: {
+            DataType: 'String',
+            StringValue: message.email,
+          },
+          CreatedAt: {
+            DataType: 'String',
+            StringValue: new Date().toISOString(),
+          },
+          Type: {
+            DataType: 'String',
+            StringValue: type,
+          },
         },
-        CreatedAt: {
-          DataType: 'String',
-          StringValue: new Date().toISOString(),
-        },
-        Type: {
-          DataType: 'String',
-          StringValue: type,
-        },
-      },
-      MessageBody: JSON.stringify(message),
-      MessageGroupId: type,
+        MessageBody: JSON.stringify(message),
+        MessageGroupId: type,
+      });
+    }
+    const command = new SendMessageBatchCommand({
+      Entries: entries,
       QueueUrl: queue,
     });
 
