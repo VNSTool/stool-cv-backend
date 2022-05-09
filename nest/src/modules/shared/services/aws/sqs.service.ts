@@ -2,7 +2,6 @@ import {
   ReceiveMessageCommand,
   SendMessageBatchCommand,
   SendMessageBatchRequestEntry,
-  SendMessageCommand,
   SQSClient,
   SQSClientConfig,
 } from '@aws-sdk/client-sqs';
@@ -74,13 +73,13 @@ export class AwsSqsService implements IQueueService {
     });
 
     const response = await this.client.send(command);
-    this.logger.log(response);
+    this.logger.log('Send message to queue', response);
     if (response.$metadata.httpStatusCode !== 200) {
       throw new InternalServerErrorException();
     }
   }
 
-  async receiveMessage(queue: string): Promise<Object> {
+  async receiveMessage(queue: string): Promise<Object> | null {
     const command = new ReceiveMessageCommand({
       QueueUrl: queue,
       MaxNumberOfMessages: this.maximumMessageReceive,
@@ -89,12 +88,14 @@ export class AwsSqsService implements IQueueService {
     });
 
     const response = await this.client.send(command);
-    this.logger.log(response);
+    this.logger.log('Receive message from queue', response);
     if (response.$metadata.httpStatusCode !== 200) {
       throw new InternalServerErrorException();
     }
 
     const sqsMessages = response.Messages;
+    if (!sqsMessages || sqsMessages.length === 0) return null;
+
     return sqsMessages.map((message) => ({
       messageId: message.MessageId,
       attributes: message.MessageAttributes,
