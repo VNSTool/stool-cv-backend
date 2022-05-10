@@ -7,9 +7,9 @@ import {
   Post,
   Delete,
   Inject,
-  Param,
   Body,
   Get,
+  Query,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { IStorageService, StorageService } from '../shared/interfaces';
@@ -38,15 +38,15 @@ export class JobDetailController {
     };
   }
 
-  @Delete('job-detail/:fileUrl')
-  deleteFile(@Param('fileUrl') fileUrl: string) {
+  @Delete('job-detail')
+  async deleteFile(@Query('fileUrl') fileUrl: string) {
     const filePath = this.convertPathService.extractFilePathFromUrl(fileUrl);
 
     if (!filePath) {
       throw new BadRequestException();
     }
 
-    this.storageSerice.delete(filePath);
+    await this.storageSerice.delete(filePath);
 
     return {
       statusCode: HttpStatus.OK,
