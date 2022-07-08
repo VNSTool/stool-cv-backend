@@ -37,7 +37,7 @@ jobs:
       - name: Terraform init
         working-directory: ./provision/production
         env:
-          STATE: ${{ env.PROJECT }/${{ env.ENV }}/terraform.tfstate
+          STATE: ${{ env.PROJECT }}/${{ env.ENV }}/terraform.tfstate
         run: terraform init -backend-config "key=$STATE" -force-copy -input=false
 
       - name: Terraform plan destroy
