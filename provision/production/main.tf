@@ -136,7 +136,7 @@ data "template_file" "user_data" {
 resource "aws_launch_configuration" "launch_configuration" {
   image_id = data.aws_ami.linux.id
   instance_type = local.instance_type
-  spot_price = local.spot_price
+  # spot_price = local.spot_price
 
   security_groups = [
     module.ec2_security_group.this_security_group_id
