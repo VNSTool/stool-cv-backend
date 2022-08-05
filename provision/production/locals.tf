@@ -19,7 +19,7 @@ locals {
   public_cidr_block_a         = "10.0.0.32/28"
   public_cidr_block_b         = "10.0.0.48/28"
 
-  instance_type               = "t3a.micro"
+  instance_type               = "t3a.nano"
   spot_price                  = "0.01"
   ec2_role                    = "stool-ec2-curriculum-vitae-production"
   min_size                    = 1
