@@ -167,7 +167,6 @@ resource "aws_autoscaling_group" "asg"{
   desired_capacity              = local.min_size
   wait_for_capacity_timeout     = "10m"
   health_check_grace_period     = 180
-  default_instance_warmup       = 120
   health_check_type             = "EC2"
   tags                          = [
     {
